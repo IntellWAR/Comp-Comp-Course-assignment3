@@ -3,19 +3,16 @@ import random
 import time
 import json
 
-filename = "rand_very_big_matrix.json" # External matrix
-
-# Load external matrix
+# Load a matrix from a JSON file
 def load_matrix_from_file(filename):
     with open(filename, 'r') as file:
         return json.load(file)
-    
-# Define a function to calculate the total travel cost of a route
+
+# Calculate the total travel cost of a route
 def calculate_route_cost(route, distance_matrix):
-    cost = 0
-    num_cities = len(route)
-    for i in range(num_cities - 1):
-        cost += distance_matrix[route[i]][route[i+1]]
+    cost = sum(
+        distance_matrix[route[i]][route[i + 1]] for i in range(len(route) - 1)
+    )
     cost += distance_matrix[route[-1]][route[0]]  # Return to the start
     return cost
 
@@ -23,10 +20,10 @@ def calculate_route_cost(route, distance_matrix):
 def generate_neighbor(route):
     new_route = route.copy()
     i, j = sorted(random.sample(range(len(route)), 2))
-    new_route[i:j+1] = reversed(new_route[i:j+1])
+    new_route[i:j + 1] = reversed(new_route[i:j + 1])
     return new_route
 
-# Simulated Annealing algorithm for TSP
+# Simulated Annealing algorithm for the Traveling Salesman Problem (TSP)
 def tsp_simulated_annealing(distance_matrix, initial_temperature=1000, cooling_rate=0.9999, max_iterations=100000):
     num_cities = len(distance_matrix)
 
@@ -35,7 +32,7 @@ def tsp_simulated_annealing(distance_matrix, initial_temperature=1000, cooling_r
     random.shuffle(current_route)
     current_cost = calculate_route_cost(current_route, distance_matrix)
 
-    # Initialize best solution
+    # Initialize the best solution
     best_route = current_route
     best_cost = current_cost
 
@@ -69,18 +66,18 @@ def tsp_simulated_annealing(distance_matrix, initial_temperature=1000, cooling_r
 
     return best_route, best_cost
 
-# Benchmarking infrastructure
-def benchmark_tsp_sa():
-    rand_big_matrix = load_matrix_from_file(filename) # load external matrix
+# Benchmarking infrastructure for Simulated Annealing TSP solver
+def benchmark_tsp_sa(filename):
+    rand_big_matrix = load_matrix_from_file(filename)  # Load external matrix
     test_cases = [
-        ([  # 4 cities
+        ([
             [0, 10, 15, 20],
             [10, 0, 35, 25],
             [15, 35, 0, 30],
             [20, 25, 30, 0]
         ], 80),  # Expected minimum cost
 
-        ([  # 5 cities
+        ([
             [0, 10, 8, 9, 7],
             [10, 0, 10, 5, 6],
             [8, 10, 0, 8, 9],
@@ -88,7 +85,7 @@ def benchmark_tsp_sa():
             [7, 6, 9, 6, 0]
         ], 34),  # Expected minimum cost
 
-        ([  # 6 cities
+        ([
             [0, 14, 4, 10, 20, 7],
             [14, 0, 9, 8, 12, 15],
             [4, 9, 0, 15, 8, 6],
@@ -97,7 +94,7 @@ def benchmark_tsp_sa():
             [7, 15, 6, 5, 10, 0]
         ], 44),  # Expected minimum cost
 
-        ([  # 7 cities
+        ([
             [0, 12, 10, 19, 8, 15, 11],
             [12, 0, 17, 16, 14, 7, 10],
             [10, 17, 0, 13, 11, 9, 12],
@@ -107,7 +104,7 @@ def benchmark_tsp_sa():
             [11, 10, 12, 14, 9, 5, 0]
         ], 62),  # Expected minimum cost
 
-        ([  # 8 cities
+        ([
             [0, 20, 30, 10, 40, 25, 15, 35],
             [20, 0, 15, 35, 25, 30, 20, 10],
             [30, 15, 0, 20, 10, 40, 25, 30],
@@ -118,7 +115,7 @@ def benchmark_tsp_sa():
             [35, 10, 30, 25, 15, 20, 30, 0]
         ], 115),  # Expected minimum cost
 
-        ([  # 9 cities
+        ([
             [0, 18, 24, 33, 14, 19, 23, 17, 26],
             [18, 0, 21, 15, 32, 27, 20, 25, 19],
             [24, 21, 0, 28, 17, 13, 22, 20, 15],
@@ -129,7 +126,7 @@ def benchmark_tsp_sa():
             [17, 25, 20, 18, 15, 22, 24, 0, 30],
             [26, 19, 15, 21, 27, 20, 18, 30, 0]
         ], 145),  # Expected minimum cost
-        (rand_big_matrix, None) # External matrix
+        (rand_big_matrix, None)  # External matrix
     ]
 
     for i, (distance_matrix, expected_cost) in enumerate(test_cases):
@@ -137,13 +134,14 @@ def benchmark_tsp_sa():
         best_route, min_cost = tsp_simulated_annealing(distance_matrix)
         elapsed_time = time.time() - start_time
 
-        print(f"Test Case {i+1}:")
+        print(f"Test Case {i + 1}:")
         print(f"  Best Route: {best_route}")
         print(f"  Minimum Cost: {min_cost}")
         if expected_cost is not None:
             print(f"  Expected Cost: {expected_cost}")
         print(f"  Time Taken: {elapsed_time:.4f} seconds\n")
 
-# Example usage
+
 if __name__ == "__main__":
-    benchmark_tsp_sa()
+    FILENAME = "rand_very_big_matrix.json" # Path to the external matrix file
+    benchmark_tsp_sa(FILENAME)

@@ -1,8 +1,6 @@
 import numpy as np
 import json
 
-N = 100  # The size of the matrix
-
 def generate_symmetric_matrix(n, min_value=1, max_value=99):
     # Creating a random matrix
     matrix = np.random.randint(min_value, max_value + 1, size=(n, n))
@@ -16,6 +14,7 @@ def save_matrix_to_file(matrix, filename):
         json.dump(matrix, file)
 
 if __name__ == "__main__":
+    N = 100  # The size of the matrix
     filename = "rand_very_big_matrix.json"
     matrix = generate_symmetric_matrix(N)
     
