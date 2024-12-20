@@ -1,7 +1,7 @@
 # Задача коммивояжера
 Assignment 3 for the course of Computational Complexity 
 
-Part 1
+#### Part 1
 1. Классическая NP-трудная задача, заключающаяся в поиске самого короткого пути, проходящего через каждый из указанных городов хотя бы по одному разу. Причём путь обязан замыкаться в стартовом городе.
 
 2. В качестве абстракции можно представить граф, где вершины - города, а рёбра - дороги между ними с указанной длиной. В нашем случае этот граф представлен в виде массива, где номер столбца или строки - это номер города, а элемент на пересечении выбранных городов - это длина дороги между ними. Т.е.
@@ -15,7 +15,55 @@ Part 1
 | 2   | 15  | 35  | 0   | 30  |
 | 3   | 20  | 25  | 30  | 0   |
 
+Тестовые массивы вставлены в код вручную.
+
 3. Используется метод перебора, потому вычислительная сложность складывается из: 
 - Сложности самого перебора всех возможных путей, равного количеству перестановок городов (O(n!) = Ω(n!) => Θ(n!));
-- Сложности расчёта длины каждого пути (O(n) = Ω(n) => Θ(n))
-Тогда общая сложность алгоритма - Θ(n!*n).
+- Сложности расчёта длины каждого пути (O(n) = Ω(n) => Θ(n));
+
+Тогда общая сложность алгоритма - Θ(n! $*$ n).
+
+Затраченное время:
+Test Case 1:
+  Best Route: (0, 1, 3, 2)
+  Minimum Cost: 80
+  Expected Cost: 80
+  Valid Solution: True
+  Time Taken: 0.0000 seconds
+
+Test Case 2:
+  Best Route: (0, 2, 3, 1, 4)
+  Minimum Cost: 34
+  Expected Cost: 34
+  Valid Solution: True
+  Time Taken: 0.0000 seconds
+
+Test Case 3:
+  Best Route: (0, 2, 4, 1, 3, 5)
+  Minimum Cost: 44
+  Expected Cost: 44
+  Valid Solution: True
+  Time Taken: 0.0010 seconds
+
+Test Case 4:
+  Best Route: (0, 1, 5, 6, 4, 3, 2)
+  Minimum Cost: 62
+  Expected Cost: 62
+  Valid Solution: True
+  Time Taken: 0.0057 seconds
+
+Test Case 5:
+  Best Route: (0, 1, 7, 4, 2, 3, 5, 6)
+  Minimum Cost: 115
+  Expected Cost: 115
+  Valid Solution: True
+  Time Taken: 0.0498 seconds
+
+Test Case 6:
+  Best Route: (0, 1, 3, 5, 6, 8, 2, 4, 7)
+  Minimum Cost: 145
+  Expected Cost: 145
+  Valid Solution: True
+  Time Taken: 0.4520 seconds
+
+Рост времени в примерах соответствует аппроксимации $t(n) = t(1) * n * n!$
