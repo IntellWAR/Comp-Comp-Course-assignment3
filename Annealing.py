@@ -1,13 +1,15 @@
-import itertools
 import numpy as np
+import random
 import time
 import json
+
+filename = "rand_very_big_matrix.json" # External matrix
 
 # Load external matrix
 def load_matrix_from_file(filename):
     with open(filename, 'r') as file:
         return json.load(file)
-
+    
 # Define a function to calculate the total travel cost of a route
 def calculate_route_cost(route, distance_matrix):
     cost = 0
@@ -17,39 +19,58 @@ def calculate_route_cost(route, distance_matrix):
     cost += distance_matrix[route[-1]][route[0]]  # Return to the start
     return cost
 
-# Exhaustive search function for TSP
-def tsp_exhaustive_search(distance_matrix):
+# Generate a neighbor by performing a 2-opt swap
+def generate_neighbor(route):
+    new_route = route.copy()
+    i, j = sorted(random.sample(range(len(route)), 2))
+    new_route[i:j+1] = reversed(new_route[i:j+1])
+    return new_route
+
+# Simulated Annealing algorithm for TSP
+def tsp_simulated_annealing(distance_matrix, initial_temperature=1000, cooling_rate=0.9999, max_iterations=100000):
     num_cities = len(distance_matrix)
-    cities = list(range(num_cities))
-    
-    # Generate all permutations of cities
-    all_routes = itertools.permutations(cities)
-    
-    # Initialize variables to track the best route and its cost
-    min_cost = float('inf')
-    best_route = None
 
-    # Evaluate each route
-    for route in all_routes:
-        cost = calculate_route_cost(route, distance_matrix)
-        if cost < min_cost:
-            min_cost = cost
-            best_route = route
+    # Initialize the route randomly
+    current_route = list(range(num_cities))
+    random.shuffle(current_route)
+    current_cost = calculate_route_cost(current_route, distance_matrix)
 
-    return best_route, min_cost
+    # Initialize best solution
+    best_route = current_route
+    best_cost = current_cost
 
-# Function to validate the solution
-def verify_solution(route, distance_matrix):
-    num_cities = len(distance_matrix)
-    if len(route) != num_cities:
-        return False
-    if set(route) != set(range(num_cities)): # Checks whether the route includes all the cities exactly once
-        return False
-    return True
+    # Set the initial temperature
+    temperature = initial_temperature
+
+    for iteration in range(max_iterations):
+        # Generate a neighbor
+        neighbor_route = generate_neighbor(current_route)
+        neighbor_cost = calculate_route_cost(neighbor_route, distance_matrix)
+
+        # Calculate the cost difference
+        delta_cost = neighbor_cost - current_cost
+
+        # Decide whether to accept the neighbor
+        if delta_cost < 0 or random.random() < np.exp(-delta_cost / temperature):
+            current_route = neighbor_route
+            current_cost = neighbor_cost
+
+            # Update the best solution if the neighbor is better
+            if current_cost < best_cost:
+                best_route = current_route
+                best_cost = current_cost
+
+        # Cool down the temperature
+        temperature *= cooling_rate
+
+        # Stop if the temperature is very low
+        if temperature < 1e-3:
+            break
+
+    return best_route, best_cost
 
 # Benchmarking infrastructure
-def benchmark_tsp():
-    filename = "rand_big_matrix.json"
+def benchmark_tsp_sa():
     rand_big_matrix = load_matrix_from_file(filename) # load external matrix
     test_cases = [
         ([  # 4 cities
@@ -108,12 +129,12 @@ def benchmark_tsp():
             [17, 25, 20, 18, 15, 22, 24, 0, 30],
             [26, 19, 15, 21, 27, 20, 18, 30, 0]
         ], 145),  # Expected minimum cost
-        (rand_big_matrix, 251) # External matrix
+        (rand_big_matrix, None) # External matrix
     ]
 
     for i, (distance_matrix, expected_cost) in enumerate(test_cases):
         start_time = time.time()
-        best_route, min_cost = tsp_exhaustive_search(distance_matrix)
+        best_route, min_cost = tsp_simulated_annealing(distance_matrix)
         elapsed_time = time.time() - start_time
 
         print(f"Test Case {i+1}:")
@@ -121,13 +142,8 @@ def benchmark_tsp():
         print(f"  Minimum Cost: {min_cost}")
         if expected_cost is not None:
             print(f"  Expected Cost: {expected_cost}")
-        print(f"  Valid Solution: {verify_solution(best_route, distance_matrix)}")
         print(f"  Time Taken: {elapsed_time:.4f} seconds\n")
-
-# Computational Complexity Estimation
-# The exhaustive search evaluates all permutations of cities, O(n!).
-# For each permutation, the cost calculation is O(n), so the overall complexity is O(n! * n).
 
 # Example usage
 if __name__ == "__main__":
-    benchmark_tsp()
+    benchmark_tsp_sa()
