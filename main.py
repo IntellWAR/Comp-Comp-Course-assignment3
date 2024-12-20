@@ -10,27 +10,20 @@ def load_matrix_from_file(filename):
 
 # Define a function to calculate the total travel cost of a route
 def calculate_route_cost(route, distance_matrix):
-    cost = 0
-    num_cities = len(route)
-    for i in range(num_cities - 1):
-        cost += distance_matrix[route[i]][route[i+1]]
-    cost += distance_matrix[route[-1]][route[0]]  # Return to the start
+    cost = sum(
+        distance_matrix[route[i]][route[i + 1]] for i in range(len(route) - 1)
+    )
+    # Returning to the starting city
+    cost += distance_matrix[route[-1]][route[0]]
     return cost
 
 # Exhaustive search function for TSP
 def tsp_exhaustive_search(distance_matrix):
-    num_cities = len(distance_matrix)
-    cities = list(range(num_cities))
-    
-    # Generate all permutations of cities
-    all_routes = itertools.permutations(cities)
-    
-    # Initialize variables to track the best route and its cost
+    cities = list(range(len(distance_matrix)))
     min_cost = float('inf')
     best_route = None
 
-    # Evaluate each route
-    for route in all_routes:
+    for route in itertools.permutations(cities):
         cost = calculate_route_cost(route, distance_matrix)
         if cost < min_cost:
             min_cost = cost
@@ -41,16 +34,27 @@ def tsp_exhaustive_search(distance_matrix):
 # Function to validate the solution
 def verify_solution(route, distance_matrix):
     num_cities = len(distance_matrix)
-    if len(route) != num_cities:
-        return False
-    if set(route) != set(range(num_cities)): # Checks whether the route includes all the cities exactly once
-        return False
-    return True
+    return len(route) == num_cities and set(route) == set(range(num_cities))  # Checks whether the route includes all the cities exactly once
+
+
+def run_test_case(test_case_index, distance_matrix, expected_cost=None):
+    print(f"Test Case {test_case_index + 1}:")
+
+    start_time = time.time()
+    best_route, min_cost = tsp_exhaustive_search(distance_matrix)
+    elapsed_time = time.time() - start_time
+
+    print(f"  Best Route: {best_route}")
+    print(f"  Minimum Cost: {min_cost}")
+    if expected_cost is not None:
+        print(f"  Expected Cost: {expected_cost}")
+    print(f"  Valid Solution: {verify_solution(best_route, distance_matrix)}")
+    print(f"  Time Taken: {elapsed_time:.4f} seconds\n")
 
 # Benchmarking infrastructure
-def benchmark_tsp():
-    filename = "rand_big_matrix.json"
-    rand_big_matrix = load_matrix_from_file(filename) # load external matrix
+def benchmark_tsp(filename):
+    external_matrix = load_matrix_from_file(filename)
+
     test_cases = [
         ([  # 4 cities
             [0, 10, 15, 20],
@@ -58,7 +62,6 @@ def benchmark_tsp():
             [15, 35, 0, 30],
             [20, 25, 30, 0]
         ], 80),  # Expected minimum cost
-
         ([  # 5 cities
             [0, 10, 8, 9, 7],
             [10, 0, 10, 5, 6],
@@ -66,7 +69,6 @@ def benchmark_tsp():
             [9, 5, 8, 0, 6],
             [7, 6, 9, 6, 0]
         ], 34),  # Expected minimum cost
-
         ([  # 6 cities
             [0, 14, 4, 10, 20, 7],
             [14, 0, 9, 8, 12, 15],
@@ -75,7 +77,6 @@ def benchmark_tsp():
             [20, 12, 8, 11, 0, 10],
             [7, 15, 6, 5, 10, 0]
         ], 44),  # Expected minimum cost
-
         ([  # 7 cities
             [0, 12, 10, 19, 8, 15, 11],
             [12, 0, 17, 16, 14, 7, 10],
@@ -85,7 +86,6 @@ def benchmark_tsp():
             [15, 7, 9, 12, 10, 0, 5],
             [11, 10, 12, 14, 9, 5, 0]
         ], 62),  # Expected minimum cost
-
         ([  # 8 cities
             [0, 20, 30, 10, 40, 25, 15, 35],
             [20, 0, 15, 35, 25, 30, 20, 10],
@@ -96,7 +96,6 @@ def benchmark_tsp():
             [15, 20, 25, 20, 35, 10, 0, 30],
             [35, 10, 30, 25, 15, 20, 30, 0]
         ], 115),  # Expected minimum cost
-
         ([  # 9 cities
             [0, 18, 24, 33, 14, 19, 23, 17, 26],
             [18, 0, 21, 15, 32, 27, 20, 25, 19],
@@ -108,26 +107,13 @@ def benchmark_tsp():
             [17, 25, 20, 18, 15, 22, 24, 0, 30],
             [26, 19, 15, 21, 27, 20, 18, 30, 0]
         ], 145),  # Expected minimum cost
-        (rand_big_matrix, 251) # External matrix
+        (external_matrix, 251) # External matrix
     ]
 
     for i, (distance_matrix, expected_cost) in enumerate(test_cases):
-        start_time = time.time()
-        best_route, min_cost = tsp_exhaustive_search(distance_matrix)
-        elapsed_time = time.time() - start_time
+        run_test_case(i, distance_matrix, expected_cost)
 
-        print(f"Test Case {i+1}:")
-        print(f"  Best Route: {best_route}")
-        print(f"  Minimum Cost: {min_cost}")
-        if expected_cost is not None:
-            print(f"  Expected Cost: {expected_cost}")
-        print(f"  Valid Solution: {verify_solution(best_route, distance_matrix)}")
-        print(f"  Time Taken: {elapsed_time:.4f} seconds\n")
 
-# Computational Complexity Estimation
-# The exhaustive search evaluates all permutations of cities, O(n!).
-# For each permutation, the cost calculation is O(n), so the overall complexity is O(n! * n).
-
-# Example usage
 if __name__ == "__main__":
-    benchmark_tsp()
+    FILENAME = "rand_big_matrix.json" # Path to the external matrix file
+    benchmark_tsp(FILENAME)
